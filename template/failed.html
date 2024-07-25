@@ -1,0 +1,44 @@
+{{define "failed.html"}}
+<!doctype html>
+<html>
+  <head>
+    <title>{{.Title}}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+      }
+
+      div.main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        gap: 1rem;
+      }
+
+      label.title {
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+
+      label.error {
+        font-size: 1rem;
+        color: red;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="main">
+      <label class="title">{{.Title}}</label>
+      <label class="error">Invalid Username or Password</label>
+    </div>
+  </body>
+</html>
+{{end}}
