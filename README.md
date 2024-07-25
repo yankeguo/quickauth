@@ -9,7 +9,7 @@ A basic reverse proxy featuring a simple authentication web interface
 - `QUICKAUTH_TARGET_INSECURE`: Whether to ignore the certificate verification of the target. Default is `false`.
 - `QUICKAUTH_USERNAME`: The username for authentication.
 - `QUICKAUTH_PASSWORD`: The password for authentication.
-- `QUICLKAUTH_SECRET_KEY`: The secret key for cookie signing.
+- `QUICKAUTH_SECRET_KEY`: The secret key for cookie signing.
 - `QUICKAUTH_TITLE`: The title of the web page. Default is `Protected By QuickAuth`.
 
 ## Metics
