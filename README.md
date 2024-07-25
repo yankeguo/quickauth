@@ -1,6 +1,6 @@
 # quickauth
 
-A Simple Authentication Proxy with Basic Web UI
+A basic reverse proxy featuring a simple authentication web interface
 
 ## Environment Variables
 
