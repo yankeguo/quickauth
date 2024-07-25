@@ -1,4 +1,4 @@
-module github.com/yankeguo/authrp
+module github.com/yankeguo/quickauth
 
 go 1.22.4
 

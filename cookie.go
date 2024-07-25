@@ -7,6 +7,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+const (
+	CookieName = "__quickauth"
+)
+
 func setAuthCookie(w http.ResponseWriter, secretKey, username string) {
 	now := time.Now()
 	age := 3600 * 24
@@ -22,7 +26,7 @@ func setAuthCookie(w http.ResponseWriter, secretKey, username string) {
 	}
 
 	cookie := &http.Cookie{
-		Name:     "__authrp",
+		Name:     CookieName,
 		Path:     "/",
 		HttpOnly: true,
 		MaxAge:   age,
@@ -32,7 +36,7 @@ func setAuthCookie(w http.ResponseWriter, secretKey, username string) {
 }
 
 func checkAuthCookie(r *http.Request, secretKey string, username string) (ok bool) {
-	cookie, err := r.Cookie("__authrp")
+	cookie, err := r.Cookie(CookieName)
 	if err != nil {
 		return
 	}

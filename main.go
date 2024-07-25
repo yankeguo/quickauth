@@ -32,23 +32,23 @@ func main() {
 	defer rg.Guard(&err)
 
 	var (
-		optTitle             = os.Getenv("AUTHRP_TITLE")
-		optListen            = os.Getenv("AUTHRP_LISTEN")
-		optTarget            = os.Getenv("AUTHRP_TARGET")
-		optTargetInsecure, _ = strconv.ParseBool(os.Getenv("AUTHRP_TARGET_INSECURE"))
-		optSecretKey         = os.Getenv("AUTHRP_SECRET_KEY")
-		optUsername          = os.Getenv("AUTHRP_USERNAME")
-		optPassword          = os.Getenv("AUTHRP_PASSWORD")
+		optTitle             = os.Getenv("QUICKAUTH_TITLE")
+		optListen            = os.Getenv("QUICKAUTH_LISTEN")
+		optTarget            = os.Getenv("QUICKAUTH_TARGET")
+		optTargetInsecure, _ = strconv.ParseBool(os.Getenv("QUICKAUTH_TARGET_INSECURE"))
+		optSecretKey         = os.Getenv("QUICKAUTH_SECRET_KEY")
+		optUsername          = os.Getenv("QUICKAUTH_USERNAME")
+		optPassword          = os.Getenv("QUICKAUTH_PASSWORD")
 	)
 
 	if optTitle == "" {
-		optTitle = "Protected by AuthRP"
+		optTitle = "Protected by QuickAuth"
 	}
 	if optListen == "" {
 		optListen = ":80"
 	}
 	if optTarget == "" {
-		err = errors.New("AUTHRP_TARGET is required")
+		err = errors.New("QUICKAUTH_TARGET is required")
 		return
 	}
 	if optSecretKey == "" {
@@ -57,11 +57,11 @@ func main() {
 		optSecretKey = hex.EncodeToString(buf)
 	}
 	if optUsername == "" {
-		err = errors.New("AUTHRP_USERNAME is required")
+		err = errors.New("QUICKAUTH_USERNAME is required")
 		return
 	}
 	if optPassword == "" {
-		err = errors.New("AUTHRP_PASSWORD is required")
+		err = errors.New("QUICKAUTH_PASSWORD is required")
 		return
 	}
 

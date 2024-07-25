@@ -16,22 +16,22 @@ import (
 )
 
 const (
-	PathMetrics   = "/__authrp/metrics"
-	PathReady     = "/__authrp/ready"
-	PathAuthorize = "/__authrp/authorize"
-	PathFailed    = "/__authrp/failed"
+	PathMetrics   = "/__quickauth/metrics"
+	PathReady     = "/__quickauth/ready"
+	PathAuthorize = "/__quickauth/authorize"
+	PathFailed    = "/__quickauth/failed"
 )
 
 var (
 	metricLabels = []string{"request_method", "request_path", "authenticated"}
 
 	metricRequestsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "authrp_proxy_http_requests_total",
+		Name: "quickauth_proxy_http_requests_total",
 		Help: "The total number of handled http request",
 	}, metricLabels)
 
 	metricRequestsDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "authrp_proxy_http_requests_duration",
+		Name: "quickauth_proxy_http_requests_duration",
 		Help: "The duration of handled http request",
 	}, metricLabels)
 )
@@ -123,7 +123,11 @@ func newServer(opts serverOptions) (s *http.Server, err error) {
 			if authenticated {
 				hR.ServeHTTP(rw, req)
 			} else {
-				http.Redirect(rw, req, PathAuthorize+"?redirect="+url.QueryEscape(req.RequestURI), http.StatusFound)
+				if req.Method == http.MethodGet {
+					http.Redirect(rw, req, PathAuthorize+"?redirect="+url.QueryEscape(req.RequestURI), http.StatusFound)
+				} else {
+					http.Error(rw, "Unauthorized", http.StatusUnauthorized)
+				}
 			}
 
 			// metrics
