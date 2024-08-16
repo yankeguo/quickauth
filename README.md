@@ -2,6 +2,28 @@
 
 A basic reverse proxy featuring a simple authentication web interface
 
+[中文文档](README.zh.md)
+
+## Installation
+
+- Build from source
+
+```bash
+git clone https://github.com/yankeguo/quickauth.git
+cd quickauth
+go build -o quickauth
+```
+
+- Download from GitHub
+
+View <https://github.com/yankeguo/quickauth/releases> for the latest release.
+
+- Docker
+
+```bash
+docker run -d -p 80:80 -e QUICKAUTH_TARGET=example.com yankeguo/quickauth
+```
+
 ## Environment Variables
 
 - `QUICKAUTH_LISTEN`: The listening address to listen on. Default is `:80`.
