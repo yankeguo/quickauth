@@ -3,7 +3,7 @@ module github.com/yankeguo/quickauth
 go 1.22.4
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/prometheus/client_golang v1.19.1
 	github.com/yankeguo/rg v1.3.0
 )
