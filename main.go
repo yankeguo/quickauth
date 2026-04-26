@@ -39,13 +39,19 @@ func main() {
 		optSecretKey         = os.Getenv("QUICKAUTH_SECRET_KEY")
 		optUsername          = os.Getenv("QUICKAUTH_USERNAME")
 		optPassword          = os.Getenv("QUICKAUTH_PASSWORD")
+		optTLSCert           = os.Getenv("QUICKAUTH_TLS_CERT")
+		optTLSKey            = os.Getenv("QUICKAUTH_TLS_KEY")
 	)
 
 	if optTitle == "" {
 		optTitle = "Protected by QuickAuth"
 	}
 	if optListen == "" {
-		optListen = ":80"
+		if optTLSCert != "" && optTLSKey != "" {
+			optListen = ":443"
+		} else {
+			optListen = ":80"
+		}
 	}
 	if optTarget == "" {
 		err = errors.New("QUICKAUTH_TARGET is required")
@@ -107,7 +113,11 @@ func main() {
 	signal.Notify(chSig, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
-		chErr <- s.ListenAndServe()
+		if optTLSCert != "" && optTLSKey != "" {
+			chErr <- s.ListenAndServeTLS(optTLSCert, optTLSKey)
+		} else {
+			chErr <- s.ListenAndServe()
+		}
 	}()
 
 	select {
