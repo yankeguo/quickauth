@@ -26,13 +26,15 @@ docker run -d -p 80:80 -e QUICKAUTH_TARGET=example.com yankeguo/quickauth
 
 ## Environment Variables
 
-- `QUICKAUTH_LISTEN`: The listening address to listen on. Default is `:80`.
+- `QUICKAUTH_LISTEN`: The listening address to listen on. Default is `:80` (`:443` when TLS is enabled).
 - `QUICKAUTH_TARGET`: The target address to proxy to.
 - `QUICKAUTH_TARGET_INSECURE`: Whether to ignore the certificate verification of the target. Default is `false`.
 - `QUICKAUTH_USERNAME`: The username for authentication.
 - `QUICKAUTH_PASSWORD`: The password for authentication.
 - `QUICKAUTH_SECRET_KEY`: The secret key for cookie signing.
 - `QUICKAUTH_TITLE`: The title of the web page. Default is `Protected By QuickAuth`.
+- `QUICKAUTH_TLS_CERT`: Path to the TLS certificate file. When set alongside `QUICKAUTH_TLS_KEY`, the server listens on HTTPS.
+- `QUICKAUTH_TLS_KEY`: Path to the TLS private key file.
 
 ## Metics
 

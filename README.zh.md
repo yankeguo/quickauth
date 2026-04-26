@@ -24,13 +24,15 @@ docker run -d -p 80:80 -e QUICKAUTH_TARGET=example.com yankeguo/quickauth
 
 ## 环境变量
 
-- `QUICKAUTH_LISTEN`: 服务监听地址, 默认为 `:80`
+- `QUICKAUTH_LISTEN`: 服务监听地址, 默认为 `:80` (启用 TLS 时为 `:443`)
 - `QUICKAUTH_TARGET`: 代理目标地址, 比如 `http://myservice:8080`
 - `QUICKAUTH_TARGET_INSECURE`: 如果代理目标是一个 `https` 服务, 是否忽略证书验证, 默认为 `false`
 - `QUICKAUTH_USERNAME`: 账户
 - `QUICKAUTH_PASSWORD`: 密码
 - `QUICKAUTH_SECRET_KEY`: 用以加密 Cookie 的签名
 - `QUICKAUTH_TITLE`: 登录页面标题, 默认为 `Protected By QuickAuth`
+- `QUICKAUTH_TLS_CERT`: TLS 证书文件路径。与 `QUICKAUTH_TLS_KEY` 同时配置时, 服务将以 HTTPS 方式监听。
+- `QUICKAUTH_TLS_KEY`: TLS 私钥文件路径。
 
 ## Prometheus 指标
 
