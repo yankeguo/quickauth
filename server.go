@@ -51,6 +51,9 @@ func newServer(opts serverOptions) (s *http.Server, err error) {
 	defer rg.Guard(&err)
 
 	hR := httputil.NewSingleHostReverseProxy(rg.Must(url.Parse(opts.target)))
+	// FlushInterval < 0 means flush immediately after each write, ensuring
+	// timely delivery of streaming responses (SSE, WebSocket, etc.)
+	hR.FlushInterval = -1 * time.Nanosecond
 	hR.Transport = &http.Transport{
 		Proxy:             http.ProxyFromEnvironment,
 		DialContext:       (&net.Dialer{}).DialContext,
