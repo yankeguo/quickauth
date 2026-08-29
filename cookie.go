@@ -11,7 +11,7 @@ const (
 	CookieName = "__quickauth"
 )
 
-func setAuthCookie(w http.ResponseWriter, secretKey, username string) {
+func setAuthCookie(w http.ResponseWriter, secretKey, username string, secure bool) {
 	now := time.Now()
 	age := 3600 * 24
 
@@ -29,6 +29,8 @@ func setAuthCookie(w http.ResponseWriter, secretKey, username string) {
 		Name:     CookieName,
 		Path:     "/",
 		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   age,
 		Value:    token,
 	}
@@ -43,7 +45,7 @@ func checkAuthCookie(r *http.Request, secretKey string, username string) (ok boo
 
 	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
-	})
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
 	if err != nil {
 		return

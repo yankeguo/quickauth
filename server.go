@@ -1,12 +1,13 @@
 package main
 
 import (
+	"crypto/subtle"
 	"crypto/tls"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -45,6 +46,7 @@ type serverOptions struct {
 	secretKey      string
 	username       string
 	password       string
+	secureCookie   bool
 }
 
 func newServer(opts serverOptions) (s *http.Server, err error) {
@@ -54,19 +56,32 @@ func newServer(opts serverOptions) (s *http.Server, err error) {
 	// FlushInterval < 0 means flush immediately after each write, ensuring
 	// timely delivery of streaming responses (SSE, WebSocket, etc.)
 	hR.FlushInterval = -1 * time.Nanosecond
-	hR.Transport = &http.Transport{
-		Proxy:             http.ProxyFromEnvironment,
-		DialContext:       (&net.Dialer{}).DialContext,
-		ForceAttemptHTTP2: true,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: opts.targetInsecure,
-		},
+	// Clone the default transport to inherit sane timeouts (TLS handshake,
+	// idle connection, expect-continue) without hand-rolling them.
+	hT := http.DefaultTransport.(*http.Transport).Clone()
+	hT.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: opts.targetInsecure,
 	}
+	// ResponseHeaderTimeout MUST stay zero: it bounds the wait for the
+	// upstream response headers, and a non-zero value would abort slow or
+	// long-lived streaming endpoints (e.g. an SSE endpoint that sends no
+	// headers until the first event).
+	hT.ResponseHeaderTimeout = 0
+	hR.Transport = hT
 
 	hP := promhttp.Handler()
 
 	s = &http.Server{
 		Addr: opts.listen,
+		// ReadHeaderTimeout and IdleTimeout protect against slowloris and
+		// dead keep-alive connections. Neither affects an in-flight response.
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		// ReadTimeout and WriteTimeout MUST stay zero: they bound the whole
+		// lifetime of a request/response and would kill long-lived streaming
+		// connections such as SSE and WebSocket.
+		ReadTimeout:  0,
+		WriteTimeout: 0,
 		Handler: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			// metrics
 			if req.URL.Path == PathMetrics {
@@ -87,10 +102,16 @@ func newServer(opts serverOptions) (s *http.Server, err error) {
 						username = req.FormValue("username")
 						password = req.FormValue("password")
 					)
-					if (username == opts.username) && (password == opts.password) {
-						setAuthCookie(rw, opts.secretKey, username)
+					// constant-time comparison to avoid leaking credential
+					// length/prefix through timing
+					credentialsOK := subtle.ConstantTimeCompare([]byte(username), []byte(opts.username)) == 1 &&
+						subtle.ConstantTimeCompare([]byte(password), []byte(opts.password)) == 1
+					if credentialsOK {
+						setAuthCookie(rw, opts.secretKey, username, opts.secureCookie)
 						redirect := req.URL.Query().Get("redirect")
-						if redirect == "" {
+						// only allow local paths, preventing open redirects
+						// (e.g. ?redirect=https://evil.example or //evil.example)
+						if !strings.HasPrefix(redirect, "/") || strings.HasPrefix(redirect, "//") {
 							redirect = "/"
 						}
 						http.Redirect(rw, req, redirect, http.StatusFound)

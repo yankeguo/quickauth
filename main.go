@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"syscall"
 	"text/template"
+	"time"
 
 	"github.com/yankeguo/rg"
 )
@@ -97,6 +98,8 @@ func main() {
 		),
 	)
 
+	tlsEnabled := optTLSCert != "" && optTLSKey != ""
+
 	s := rg.Must(newServer(serverOptions{
 		htmlAuthorize:  htmlAuthorize.Bytes(),
 		htmlFailed:     htmlFailed.Bytes(),
@@ -106,6 +109,7 @@ func main() {
 		secretKey:      optSecretKey,
 		username:       optUsername,
 		password:       optPassword,
+		secureCookie:   tlsEnabled,
 	}))
 
 	chErr := make(chan error, 1)
@@ -113,7 +117,7 @@ func main() {
 	signal.Notify(chSig, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
-		if optTLSCert != "" && optTLSKey != "" {
+		if tlsEnabled {
 			chErr <- s.ListenAndServeTLS(optTLSCert, optTLSKey)
 		} else {
 			chErr <- s.ListenAndServe()
@@ -127,5 +131,14 @@ func main() {
 		log.Println("signal caught:", sig.String())
 	}
 
-	err = s.Shutdown(context.Background())
+	// Bound the graceful shutdown: http.Server.Shutdown waits for all active
+	// connections, and long-lived streams (SSE, WebSocket) may never finish on
+	// their own. Fall back to a forceful close once the grace period expires.
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err = s.Shutdown(ctx); err != nil {
+		log.Println("graceful shutdown timed out, closing forcefully:", err.Error())
+		err = s.Close()
+	}
 }
